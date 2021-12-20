@@ -64,7 +64,7 @@ extension NotificationService {
 
         let components: DateComponents = {
             if debugMode {
-//                Test components (fire 2s from now)
+                // Test components (fire 2s from now)
                 return Calendar.current.dateComponents([.second, .minute, .hour, .day, .month, .year], from: Date().addingTimeInterval(2))
             } else {
                 var components = Calendar.current.dateComponents([.hour, .day, .month, .year], from: content.date)
@@ -91,9 +91,11 @@ extension NotificationService {
     public func cancelAllNotifications() {
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
     }
+}
 
-    // Helpers
+// MARK: - Helpers
 
+extension NotificationService {
     private func imageAttachment(withPath path: String) -> UNNotificationAttachment? {
         let originalFileURL = URL(fileURLWithPath: path)
         let copyFolderURL = FileManager.default.temporaryDirectory.appendingPathComponent(ProcessInfo.processInfo.globallyUniqueString, isDirectory: true)

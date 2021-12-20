@@ -8,21 +8,21 @@
 import Foundation
 
 public struct NotificationContent {
-    let imageFilePath: String?
+    let identifier: String
     let title: String
+    let date: Date
     let subtitle: String?
     let body: String?
-    let date: Date
-    let identifier: String
+    let imageFilePath: String?
     let userInfo: [AnyHashable: Any]
 
-    public init(imageFilePath: String?, title: String, subtitle: String?, body: String?, date: Date, identifier: String, userInfo: [AnyHashable: Any]) {
-        self.imageFilePath = imageFilePath
+    public init(identifier: String, title: String, date: Date, subtitle: String?, body: String?, imageFilePath: String?, userInfo: [AnyHashable : Any]) {
+        self.identifier = identifier
         self.title = title
+        self.date = date
         self.subtitle = subtitle
         self.body = body
-        self.date = date
-        self.identifier = identifier
+        self.imageFilePath = imageFilePath
         self.userInfo = userInfo
     }
 }
