@@ -14,26 +14,6 @@ public protocol NotificationServiceDelegate {
     var notificationTime: Int { get }
 }
 
-public struct NotificationContent {
-    let imageFilePath: String?
-    let title: String
-    let subtitle: String?
-    let body: String?
-    let date: Date
-    let identifier: String
-    let userInfo: [AnyHashable: Any]
-
-    public init(imageFilePath: String?, title: String, subtitle: String?, body: String?, date: Date, identifier: String, userInfo: [AnyHashable: Any]) {
-        self.imageFilePath = imageFilePath
-        self.title = title
-        self.subtitle = subtitle
-        self.body = body
-        self.date = date
-        self.identifier = identifier
-        self.userInfo = userInfo
-    }
-}
-
 public struct NotificationService {
     private let delegate: NotificationServiceDelegate
     private let debugMode: Bool
