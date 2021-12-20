@@ -98,7 +98,7 @@ extension NotificationService {
 extension NotificationService {
     private func imageAttachment(withPath path: String) -> UNNotificationAttachment? {
         let originalFileURL = URL(fileURLWithPath: path)
-        let copyFolderURL = FileManager.default.temporaryDirectory.appendingPathComponent(ProcessInfo.processInfo.globallyUniqueString, isDirectory: true)
+        let copyFolderURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent(ProcessInfo.processInfo.globallyUniqueString, isDirectory: true)
         let copyFileURL = copyFolderURL.appendingPathComponent(originalFileURL.lastPathComponent)
 
         do {
