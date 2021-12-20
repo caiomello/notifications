@@ -27,25 +27,23 @@ public struct NotificationService {
 // MARK: - Operations
 
 extension NotificationService {
-    public func requestAuthorization(_ completion: @escaping (Bool) -> Void) {
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge]) { (granted, error) in
-            completion(granted)
+    public func requestAuthorization() async throws -> Bool {
+        try await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge])
+    }
+
+    public func getAuthorizationStatus() async -> UNAuthorizationStatus {
+        await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
+    }
+
+    public func scheduleNotifications(withContent content: [NotificationContent]) async throws {
+        guard delegate.notificationsEnabled else { return }
+
+        for item in content {
+            try await scheduleNotification(withContent: item)
         }
     }
 
-    public func getAuthorizationStatus(completion: @escaping (UNAuthorizationStatus) -> Void) {
-        UNUserNotificationCenter.current().getNotificationSettings { settings in
-            completion(settings.authorizationStatus)
-        }
-    }
-
-    public func scheduleNotifications(withContent content: [NotificationContent]) {
-        if self.delegate.notificationsEnabled {
-            content.forEach({ self.scheduleNotification(withContent: $0) })
-        }
-    }
-
-    private func scheduleNotification(withContent content: NotificationContent) {
+    private func scheduleNotification(withContent content: NotificationContent) async throws {
         let notification = UNMutableNotificationContent()
         notification.title = content.title
         notification.userInfo = content.userInfo
@@ -77,11 +75,7 @@ extension NotificationService {
 
         let request = UNNotificationRequest(identifier: content.identifier, content: notification, trigger: trigger)
 
-        UNUserNotificationCenter.current().add(request, withCompletionHandler: { error in
-            if let error = error {
-                print("Error scheduling notification: \(error)")
-            }
-        })
+        try await UNUserNotificationCenter.current().add(request)
     }
 
     public func cancelNotifications(withIdentifiers identifiers: [String]) {
