@@ -92,17 +92,18 @@ extension NotificationService {
 extension NotificationService {
     private func imageAttachment(withPath path: String) -> UNNotificationAttachment? {
         let originalFileURL = URL(fileURLWithPath: path)
-        let copyFolderURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent(ProcessInfo.processInfo.globallyUniqueString, isDirectory: true)
+        let copyFolderURL = FileManager.default.temporaryDirectory.appendingPathComponent(ProcessInfo.processInfo.globallyUniqueString, isDirectory: true)
         let copyFileURL = copyFolderURL.appendingPathComponent(originalFileURL.lastPathComponent).appendingPathExtension(for: .jpeg)
 
         do {
             try FileManager.default.createDirectory(atPath: copyFolderURL.path, withIntermediateDirectories: true, attributes: nil)
             try FileManager.default.copyItem(atPath: originalFileURL.path, toPath: copyFileURL.path)
 
-            return try UNNotificationAttachment(identifier: "image",
-                                                url: copyFileURL,
-                                                options: [UNNotificationAttachmentOptionsTypeHintKey: UTType.jpeg])
-
+            return try UNNotificationAttachment(
+                identifier: "image",
+                url: copyFileURL,
+                options: [UNNotificationAttachmentOptionsTypeHintKey: UTType.jpeg]
+            )
         } catch {
             print("Error creating notification attachment: \(error)")
             return nil
