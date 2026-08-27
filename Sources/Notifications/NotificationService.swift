@@ -6,19 +6,22 @@
 //
 
 import Foundation
-import UserNotifications
+import OSLog
 import UniformTypeIdentifiers
+import UserNotifications
 
-public protocol NotificationServiceDelegate {
+private let logger = Logger(subsystem: "Notifications", category: "NotificationService")
+
+public protocol NotificationServiceDelegate: Sendable {
     var notificationsEnabled: Bool { get }
     var notificationTime: Int { get }
 }
 
-public struct NotificationService {
-    private let delegate: NotificationServiceDelegate
+public struct NotificationService: Sendable {
+    private let delegate: any NotificationServiceDelegate
     private let debugMode: Bool
 
-    public init(delegate: NotificationServiceDelegate, debugMode: Bool = false) {
+    public init(delegate: any NotificationServiceDelegate, debugMode: Bool = false) {
         self.delegate = delegate
         self.debugMode = debugMode
     }
@@ -38,11 +41,17 @@ extension NotificationService {
     public func scheduleNotifications(withContent content: [NotificationContent]) async throws {
         guard delegate.notificationsEnabled else { return }
 
-        for item in content {
-            try await scheduleNotification(withContent: item)
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            for item in content {
+                group.addTask { try await scheduleNotification(withContent: item) }
+            }
+
+            try await group.waitForAll()
         }
     }
 
+    // Runs off the caller's actor: building an attachment copies a file from disk.
+    @concurrent
     private func scheduleNotification(withContent content: NotificationContent) async throws {
         let notification = UNMutableNotificationContent()
         notification.title = content.title
@@ -96,16 +105,17 @@ extension NotificationService {
         let copyFileURL = copyFolderURL.appendingPathComponent(originalFileURL.lastPathComponent).appendingPathExtension(for: .jpeg)
 
         do {
-            try FileManager.default.createDirectory(atPath: copyFolderURL.path, withIntermediateDirectories: true, attributes: nil)
-            try FileManager.default.copyItem(atPath: originalFileURL.path, toPath: copyFileURL.path)
+            try FileManager.default.createDirectory(at: copyFolderURL, withIntermediateDirectories: true)
+            try FileManager.default.copyItem(at: originalFileURL, to: copyFileURL)
 
             return try UNNotificationAttachment(
                 identifier: "image",
                 url: copyFileURL,
-                options: [UNNotificationAttachmentOptionsTypeHintKey: UTType.jpeg]
+                options: [UNNotificationAttachmentOptionsTypeHintKey: UTType.jpeg.identifier]
             )
         } catch {
-            print("Error creating notification attachment: \(error)")
+            logger.error("Error creating notification attachment: \(error.localizedDescription, privacy: .public)")
+            try? FileManager.default.removeItem(at: copyFolderURL)
             return nil
         }
     }
