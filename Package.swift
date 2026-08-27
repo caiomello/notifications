@@ -1,20 +1,13 @@
-// swift-tools-version:6.2
+// swift-tools-version:6.4
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
 
-let swiftSettings: [SwiftSetting] = [
-    .swiftLanguageMode(.v6),
-    .enableUpcomingFeature("ExistentialAny"),
-    .enableUpcomingFeature("MemberImportVisibility"),
-    .enableUpcomingFeature("NonisolatedNonsendingByDefault")
-]
-
 let package = Package(
     name: "Notifications",
     platforms: [
-        .iOS(.v15),
-        .macOS(.v12)
+        .iOS("27.0"),
+        .macOS("27.0")
     ],
     products: [
         .library(
@@ -24,10 +17,10 @@ let package = Package(
     targets: [
         .target(
             name: "Notifications",
-            swiftSettings: swiftSettings),
+            dependencies: []),
         .testTarget(
             name: "NotificationsTests",
             dependencies: ["Notifications"],
-            swiftSettings: swiftSettings)
+        )
     ]
 )

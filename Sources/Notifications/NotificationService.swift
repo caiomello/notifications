@@ -10,8 +10,6 @@ import OSLog
 import UniformTypeIdentifiers
 import UserNotifications
 
-private let logger = Logger(subsystem: "Notifications", category: "NotificationService")
-
 public protocol NotificationServiceDelegate: Sendable {
     var notificationsEnabled: Bool { get }
     var notificationTime: Int { get }
@@ -20,6 +18,8 @@ public protocol NotificationServiceDelegate: Sendable {
 public struct NotificationService: Sendable {
     private let delegate: any NotificationServiceDelegate
     private let debugMode: Bool
+
+    private let logger = Logger(subsystem: "Notifications", category: "NotificationService")
 
     public init(delegate: any NotificationServiceDelegate, debugMode: Bool = false) {
         self.delegate = delegate
@@ -50,7 +50,6 @@ extension NotificationService {
         }
     }
 
-    // Runs off the caller's actor: building an attachment copies a file from disk.
     @concurrent
     private func scheduleNotification(withContent content: NotificationContent) async throws {
         let notification = UNMutableNotificationContent()
